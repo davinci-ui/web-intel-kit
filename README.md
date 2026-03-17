@@ -1,19 +1,20 @@
 # Web Intel Kit for OpenClaw
 
-Smart web tool routing for [OpenClaw](https://github.com/openclaw/openclaw) agents. Four tools, one decision tree — your agent always picks the fastest option.
+The complete web toolkit for [OpenClaw](https://github.com/openclaw/openclaw) agents. Three tools, one smart router — your agent always picks the fastest option.
 
-## The Tools
+## The Three Tools
 
-| Tool | Best For | Speed | Setup |
-|------|----------|-------|-------|
-| **SearXNG** | Searching the web | ~200ms | Docker |
-| **web_fetch** | Reading pages | ~500ms | Built into OpenClaw |
-| **agent-browser** | Clicking, forms, SPAs | ~1-2s | npm install |
-| **OpenClaw browser** | Complex multi-tab sessions | Varies | Built into OpenClaw |
+| Tool | Best For | Speed | Install |
+|------|----------|-------|---------|
+| 🔍 **SearXNG** | Searching the web | ~200ms | `docker compose up -d` |
+| 📖 **web_fetch** | Reading pages | ~500ms | Built into OpenClaw |
+| 🌐 **agent-browser** | Clicking, forms, SPAs, screenshots | ~1-2s | `npm i -g agent-browser` |
+
+Plus OpenClaw's built-in browser for complex multi-tab sessions.
 
 ## How It Works
 
-The `web-intel` skill teaches your agent to automatically pick the right tool:
+The `web-intel` skill is a decision tree that teaches your agent to route automatically:
 
 ```
 Search? → SearXNG (fastest, aggregates Google+Bing+DDG)
@@ -24,54 +25,56 @@ Complex session? → OpenClaw browser (persistent tabs)
 
 **Rule: simplest tool first, escalate only when needed.**
 
-## Quick Install
+---
 
-### 1. SearXNG (Self-Hosted Search)
+## Install Everything
 
-Free, unlimited web search. No API keys.
+### 1. SearXNG — Self-Hosted Search (Docker)
+
+Free, unlimited web search. No API keys, no rate limits.
 
 ```bash
 cd docker
 docker compose up -d
 ```
 
-Test it:
+Verify:
 ```bash
-curl -s "http://localhost:8890/search?q=hello+world&format=json" | jq '.results[:3]'
+curl -s "http://localhost:8890/search?q=hello+world&format=json" | jq '.results[:3][] | {title, url}'
 ```
 
-### 2. agent-browser (Web Automation CLI)
+**What you get:** Google + Bing + DuckDuckGo + Wikipedia results in one JSON API call. Zero cost.
 
-Headless Chrome controlled via CLI. Click, fill, screenshot — all by reference.
+### 2. agent-browser — Web Automation CLI (npm)
+
+Headless Chrome controlled via CLI. Click, fill forms, take screenshots — all by reference.
 
 ```bash
 npm i -g agent-browser
 agent-browser install
 ```
 
-> **Note:** On Linux servers, you may need Chrome dependencies:
+> **Linux servers** may need Chrome dependencies:
 > ```bash
 > agent-browser install --with-deps
-> # If that fails:
+> # If that fails, install manually:
 > apt-get install -y libnspr4 libnss3 libatk1.0-0 libatk-bridge2.0-0 \
 >   libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxrandr2 \
 >   libgbm1 libpango-1.0-0 libcairo2 libasound2 libxshmfence1 libxfixes3
 > ```
 
-Test it:
+Verify:
 ```bash
 agent-browser open "https://example.com"
 agent-browser snapshot
 agent-browser close
 ```
 
-### 3. web_fetch (Built-in)
+### 3. web_fetch — Built-in
 
 Already included with OpenClaw. No setup needed.
 
-### 4. OpenClaw Browser (Built-in)
-
-Already included with OpenClaw. No setup needed.
+---
 
 ## Install the Skills
 
@@ -81,7 +84,7 @@ Copy the skills into your OpenClaw skills directory:
 cp -r skills/* /path/to/your/skills/
 ```
 
-Or point OpenClaw at this repo:
+Or point OpenClaw at this repo directly:
 
 ```json5
 {
@@ -94,6 +97,39 @@ Or point OpenClaw at this repo:
 }
 ```
 
+Then add the skills to your agent config:
+
+```json5
+{
+  agents: {
+    list: [{
+      id: "main",
+      skills: ["web-intel", "searxng", "agent-browser"]
+    }]
+  }
+}
+```
+
+---
+
+## Configure SearXNG URL
+
+If SearXNG isn't on localhost:
+
+```bash
+export SEARXNG_URL="http://your-server:8890"
+```
+
+Edit `docker/searxng/settings.yml` to:
+- Enable/disable search engines
+- Change the default language
+- Adjust safe search
+- Add more engines ([full list](https://docs.searxng.org/user/configured_engines.html))
+
+**Important:** Change `secret_key` in `settings.yml` before deploying to a public network.
+
+---
+
 ## Structure
 
 ```
@@ -102,7 +138,7 @@ web-intel-kit/
 ├── docker/
 │   ├── docker-compose.yml        # SearXNG container
 │   └── searxng/
-│       └── settings.yml          # Engine config
+│       └── settings.yml          # Engine config (JSON API enabled)
 └── skills/
     ├── web-intel/
     │   └── SKILL.md              # The router — picks the right tool
@@ -114,11 +150,11 @@ web-intel-kit/
 
 ## Links
 
-| Tool | Homepage | Install |
+| Tool | Homepage | Package |
 |------|----------|---------|
-| **SearXNG** | [searxng.org](https://docs.searxng.org/) | `docker compose up -d` |
-| **agent-browser** | [npm](https://www.npmjs.com/package/agent-browser) | `npm i -g agent-browser` |
-| **OpenClaw** | [openclaw.ai](https://docs.openclaw.ai) | [Install Guide](https://docs.openclaw.ai/getting-started/installation) |
+| **SearXNG** | [docs.searxng.org](https://docs.searxng.org/) | [Docker Hub](https://hub.docker.com/r/searxng/searxng) |
+| **agent-browser** | [GitHub](https://github.com/ApeironOne/web-intel-kit) | [npm](https://www.npmjs.com/package/agent-browser) |
+| **OpenClaw** | [docs.openclaw.ai](https://docs.openclaw.ai) | [GitHub](https://github.com/openclaw/openclaw) |
 
 ## Requirements
 

@@ -1,0 +1,25 @@
+# SearXNG — Self-Hosted Search Engine
+# Aggregates Google, Bing, DuckDuckGo, Wikipedia, and more
+# Zero cost, unlimited searches, no API keys needed
+#
+# Usage:
+#   docker compose up -d
+#   curl "http://localhost:8890/search?q=hello&format=json"
+
+services:
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    restart: unless-stopped
+    ports:
+      - "8890:8080"
+    volumes:
+      - ./searxng:/etc/searxng
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8890/
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID

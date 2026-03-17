@@ -4,7 +4,7 @@
 use_default_settings: true
 
 server:
-  secret_key: "change-me-to-something-random"
+  secret_key: "7b8b345d5a8d7d07f206be0d6130c0e0c4b350b9ba55bb4c681fc4109418d4d8"
   bind_address: "0.0.0.0"
   port: 8080
   limiter: false  # Disable rate limiting for local/agent use
